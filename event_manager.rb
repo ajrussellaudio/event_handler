@@ -12,6 +12,28 @@ def legislators_by_zipcode(zipcode)
 	Sunlight::Congress::Legislator.by_zipcode(zipcode)
 end
 
+def clean_phone_number(phone_number)
+	input = phone_number.to_s
+	phone_number = ""
+	bad_number = (Array.new(10) { 0 }).join
+
+	input.each_char do |c|
+		phone_number << c if c =~ /\d/
+	end
+
+	if phone_number.length == 10
+		return format_phone_number(phone_number)
+	elsif phone_number.length == 11 && phone_number.start_with?("1")
+		return format_phone_number(phone_number[1..11])
+	else
+		return format_phone_number(bad_number)
+	end
+end
+
+def format_phone_number(number)
+	"(#{number[0..2]}) #{number[3..5]}-#{number[6..9]}"
+end
+
 def save_thank_you_letters(id, form_letter)
 	Dir.mkdir("output") unless Dir.exists? "output"
 
@@ -34,9 +56,15 @@ contents.each do |row|
 
 	zipcode = clean_zipcode(row[:zipcode])
 
+	phone_number = clean_phone_number(row[:homephone])
+
+
+
 	legislators = legislators_by_zipcode(zipcode)
 
-	form_letter = erb_template.result(binding)
+	puts "#{name} #{phone_number}"
 
-	save_thank_you_letters(id, form_letter)
+	# form_letter = erb_template.result(binding)
+
+	# save_thank_you_letters(id, form_letter)
 end
